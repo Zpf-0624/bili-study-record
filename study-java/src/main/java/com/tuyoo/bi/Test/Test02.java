@@ -366,22 +366,49 @@ public class Test02 {
 
     @Test
     public void test05(){
-        List<String> strings = Arrays.asList("a", "b", "c", "d");
-        strings.forEach(x -> {
-            if (x.equals("c")){
-                return;
-            }
-            System.out.println(x);
-        });
+
         // System.out.println(System.currentTimeMillis());
 
-        String value = "select a.event, IFNULL(b.show_name,'') showName, a.counts from " +
-                "(select project_id, event_id as event, cast(sum(records) as decimal(38,0)) as counts from event_counts where project_id = ?1 and day between ?2 and ?3 group by event_id,project_id) as a " +
-                "inner join " +
-                "( select project_id,name,show_name from event_track where project_id = ?1 )as b " +
-                "on a.project_id = b.project_id and a.event = b.name ";
-
+        String value = "select " +
+                "a.event_name eventName, " +
+                "GROUP_CONCAT(distinct property_name ) VALUE " +
+                "from (   " +
+                "  select a.project_id,b.event_name,a.property_name " +
+                "  from   (" +
+                "    select project_id,name as property_name from event_property_track where project_id = ?1 and common = '1') as a   " +
+                "  join   (" +
+                "    select distinct project_id,name as event_name from event_track where project_id = ?1 and status = '1' and preset = 0 ) as b   " +
+                "  on a.project_id = b.project_id   " +
+                "  union all   " +
+                "  select project_id,event_name,property_name from event_property_map_track where project_id = ?1 " +
+                ") as a " +
+                "where a.event_name in (?2) " +
+                "group by  a.event_name ";
         System.out.println(value);
+
+        String a =  "select a.title,a.remark,a.check_value checkValue, " +
+                "a.id, a.project_id projectId, a.type, a.add_time addTime, a.add_user addUser, a.check_dimension checkDimension, a.status, a.event_count eventCount, a.finish_event_count finishEventCount, " +
+                "count(distinct if(b.event_check_result!='success' and cast(b.vacancy as double) * 100 > a.threshold ,b.event_name,null)) as valueCount, " +
+                "count(distinct if(b.all_counts != 0,b.event_name,null)) as haveDataCount " +
+                "from " +
+                "(select * from data_track_check where project_id = ?1 and type = 'event' and IF(?2 != -999,id = ?2, 1=1)) as a " +
+                "left join " +
+                "data_track_check_result as b " +
+                "on a.id = b.`check_id`  " +
+                "group by  a.id, a.project_id, a.type, a.add_time, a.add_user, a.check_dimension, a.status, a.event_count, a.finish_event_count  " +
+                "" +
+                "union all  " +
+                "" +
+                "select  a.title,a.remark,a.check_value checkValue, a.id, a.project_id projectId, a.type, a.add_time addTime, a.add_user addUser, a.check_dimension checkDimension, a.status, a.event_count eventCount, a.finish_event_count finishEventCount, " +
+                "count(distinct if(b.event_check_result!='success' and cast(b.vacancy as double) * 100 > a.threshold ,b.property_name,null)) as valueCount, " +
+                "count(distinct if(b.all_counts != 0,b.all_counts,null)) as haveDataCount " +
+                "from  " +
+                "(select * from data_track_check where project_id = ?1 and type != 'event' and IF(?2 != -999,id = ?2, 1=1)) as a " +
+                "left join data_track_check_result as b " +
+                "on a.id = b.`check_id`  " +
+                "group by  a.id, a.project_id, a.type, a.add_time, a.add_user, a.check_dimension, a.status, a.event_count, a.finish_event_count ";
+        System.out.println(a);
+
     }
 
 
@@ -412,6 +439,11 @@ public class Test02 {
         System.out.println(set1);
         System.out.println(set2);
         System.out.println(set);
+
+        System.out.println("--------");
+
+        String s = "BILOG_EVENT_MAIN_LOADING".toLowerCase(Locale.ROOT);
+        System.out.println(s);
 
     }
 
