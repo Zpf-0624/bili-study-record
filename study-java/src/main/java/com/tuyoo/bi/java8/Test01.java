@@ -3,6 +3,7 @@ package com.tuyoo.bi.java8;
 import org.junit.Test;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Optional;
 
 import static java.lang.Thread.sleep;
@@ -31,6 +32,8 @@ public class Test01 {
         System.out.println(a);
 
         System.out.println(Optional.ofNullable(a).isPresent());
+
+        HashMap<Object, Object> objectObjectHashMap = new HashMap<>();
     }
 
 }

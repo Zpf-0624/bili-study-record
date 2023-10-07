@@ -9,6 +9,7 @@ import org.junit.Test;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @Author zhangpengfei
@@ -472,5 +473,41 @@ public class Test02 {
         System.out.println("City: " + cityName);
         System.out.println(Objects.equals("c", "C"));
     }
+
+    @Test
+    public void test09() {
+        Map<String, Integer> map = new HashMap<>();
+        map.put("key1",2);
+        map.computeIfAbsent("key1", key -> 1); // 如果键"key1"不存在，则关联键"key1"和值1
+        System.out.println(map);
+
+        System.out.println("===");
+
+        String a = null;
+        // System.out.println(a.isEmpty());
+        map.put(null, null);
+        System.out.println(map);
+    }
+
+    @Test
+    public void test10() {
+        System.out.println(extracted());
+    }
+
+    private Integer extracted() {
+        try {
+            System.out.println(1);
+            // int a =  1/0;
+            return 1;
+        } catch (Exception e) {
+            System.out.println(-1);
+            return -1;
+        } finally {
+            System.out.println(2);
+            return 2;
+        }
+    }
+
+
 
 }
