@@ -1,8 +1,11 @@
 package com.tuyoo.bi.Test;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
+import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
@@ -509,5 +512,32 @@ public class Test02 {
     }
 
 
+    @Data
+    public static class EventWithData {
 
+        String name;
+        String showName;
+        Long counts;
+        Long checkSizeLimit;
+
+        // 是否需要抽样
+        Boolean status;
+
+        public EventWithData() {
+        }
+
+        public EventWithData(String name, String showName, Long counts, Long checkSizeLimit, Boolean status) {
+            this.name = name;
+            this.showName = showName;
+            this.counts = counts;
+            this.checkSizeLimit = checkSizeLimit;
+            this.status = status;
+        }
+    }
+
+    @Test
+    public void test15() {
+        String a = "  ";
+        System.out.println(StringUtils.equals(a.trim(), ""));
+    }
 }

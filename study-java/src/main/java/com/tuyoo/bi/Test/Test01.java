@@ -1,10 +1,12 @@
 package com.tuyoo.bi.Test;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.tuyoo.bi.java8.Time;
+import lombok.Data;
+import lombok.ToString;
 import org.junit.Test;
 import lombok.SneakyThrows;
-import javax.xml.transform.Source;
+import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -655,21 +657,124 @@ public class Test01 {
     @Test
     public void test07(){
 
-        String[] strings = {"zpf", "lzq", "qyw"};
+        String a = "{\"device_id\":\"\",\"lib\":{\"lib_version\":\"0.1.0\",\"lib_type\":\"golang\"},\"part_offset\":\"fc5b4282-7488-11ee-a380-fa163ec06378\",\"project_id\":\"20461\",\"user_id\":\"10230\",\"type\":\"track\",\"event\":\"adtrace_register_new\",\"client_id\":\"Android_5.0_tyGuest,tyAccount.alipay.0-hall20461.adtrace.tuyoo\",\"event_time\":1698384219318,\"properties\":{\"adtrace_actname\":\"\",\"country\":\"未知\",\"channel_ty_adgroup_id\":\"\",\"proj_game_id\":\"9998\",\"proj_game_type\":\"3\",\"adtrace_device_ua\":\"Mozilla/5.0 (Linux; Android 13; OPD2101 Build/TP1A.220905.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/111.0.5563.116 Safari/537.36 XWEB/5317 MMWEBSDK/20230805 MMWEBID/275 MicroMessenger/8.0.42.2460(0x28002AA8) WeChat/arm64 Weixin Android Tablet NetType/WIFI Language/zh_CN ABI/arm64 MiniProgramEnv/android\",\"city\":\"未知\",\"adtrace_did\":\"24_10230\",\"sub_platform_id\":\"2\",\"uuid\":\"fc5b4282-7488-11ee-a380-fa163ec06378\",\"userid\":\"10230\",\"channel_callback_url\":\"\",\"proj_main_channel\":\"weixin\",\"province\":\"未知\",\"product_id\":\"20461\",\"adtrace_act_name\":\"\",\"proj_sub_channel\":\"yizzqx\",\"adtrace_channel_click_id\":\"\",\"adtrace_namespace\":\"qunxiongwx20535\",\"sdk_open_id\":\"oD6xD43sA0r3PcFaBVW2H0zChEOU\",\"adtrace_attributed\":\"0\",\"channel_ks_callback\":\"\",\"proj_cloud_id\":\"80\",\"channel_ty_creative_id\":\"\",\"adtrace_ty_click_id\":\"\",\"adtrace_device_ip\":\"60.191.106.130\",\"adtrace_organic_traffic\":\"1\",\"proj_project_id\":\"0\",\"proj_client_id\":\"H5_5.0_weixin.weixin.0-hall20535.weixin.yizzqx\",\"channel_ty_account_id\":\"\",\"channel_ty_campaign_id\":\"\",\"adtrace_aid\":\"24\",\"platform_id\":\"1\",\"adtrace_reattributed\":\"0\",\"sub_channel_id\":\"tuyoo\",\"adtrace_ctit\":\"\",\"channel_id\":\"adtrace\",\"adtrace_attribution_time\":\"1698384219318\",\"adtrace_platform\":\"organic\"}}";
+        AdtraceAttrData adtraceAttrData = new AdtraceAttrData(a);
+        System.out.println(adtraceAttrData);
 
-        Comparable comparable = new Comparable() {
-            @Override
-            public int compareTo(Object o) {
-                return 0;
-            }
-        };
+        Set<String> projectSet = new HashSet<>();
+        projectSet.add("111");
+        String project_id = adtraceAttrData.getProject_id();
+        System.out.println(project_id);
+        System.out.println(projectSet.contains(adtraceAttrData.getProject_id()));
+        System.out.println(JSON.toJSONString(adtraceAttrData));
 
-        Comparator comparator = new Comparator() {
-            @Override
-            public int compare(Object o1, Object o2) {
-                return 0;
-            }
-        };
+        String ss = null;
+
+        boolean b = ss == null ? a == null : ss.equals(a);
+
+        System.out.println(b);
+
+        System.out.println(ss.hashCode());
 
     }
+
+
+    @Test
+    public void test08() {
+        ArrayList<String> objects = new ArrayList<>();
+        objects.add("aa");
+        objects.add("bb");
+        objects.add("cc");
+
+        objects.forEach(x -> {
+            if (x.equals("bb")) return;
+            System.out.println(x);
+        });
+
+        /*System.out.println(objects);
+        for (String object : objects) {
+            if (object.equals("bb")) return;
+            System.out.println(object);
+        }*/
+
+        String a= null;
+        System.out.println(a.isEmpty());
+        System.out.println(111);
+
+    }
+
+
+
+
+
+
+}
+
+@Data
+@ToString
+class BaseData {
+
+    public String event;
+    public long event_time;     // 毫秒值
+    public String user_id;
+    public String project_id;
+    public String client_id;    //client_name
+    public String device_id;
+    public String type;
+    public JSONObject properties = new JSONObject();
+    public JSONObject lib = new JSONObject();
+
+
+    public BaseData() {
+        lib.put("trans_by", "GA-axe");
+        lib.put("language", "java");
+        lib.put("version", "0.0.1");
+    }
+}
+
+
+class AdtraceAttrData extends BaseData {
+
+    /**
+     * 将OPPO数据装成接收的kafka数据标准格式
+     */
+
+    public AdtraceAttrData(String value) {
+        JSONObject jsonObject = JSON.parseObject(value);
+        JSONObject properties = jsonObject.getJSONObject("properties");
+
+        this.event_time = jsonObject.getLong("event_time");
+        this.user_id = jsonObject.getString("user_id");
+
+        String cloud = properties.getString("proj_cloud_id");
+        String game = properties.getString("proj_game_id");
+        String client = properties.getString("proj_client_id");
+
+        this.project_id = null;
+        this.client_id = properties.getString("proj_client_id");
+        this.device_id = jsonObject.getString("device_id");
+
+        this.type = "profile";
+        this.event = "profile_set_once";
+
+        String sourceEvent = jsonObject.getString("event");
+
+        if ("adtrace_register_new".equals(sourceEvent)) {
+            this.device_id = "";
+            //设备归因用户属性
+            String adtracePlatform = properties.getString("adtrace_platform").trim().equals("organic") ? null : properties.getString("adtrace_platform");
+            this.properties.put("adtrace_platform", adtracePlatform);
+            this.properties.put("adtrace_act_name", properties.getString("adtrace_act_name"));
+            this.properties.put("adtrace_account_id", properties.getString("channel_ty_account_id"));
+            this.properties.put("adtrace_campaign_id", properties.getString("channel_ty_campaign_id"));
+            this.properties.put("adtrace_adgroup_id", properties.getString("channel_ty_adgroup_id"));
+            this.properties.put("adtrace_creative_id", properties.getString("channel_ty_creative_id"));
+            this.properties.put("adtrace_uniq_id", properties.getString("sdk_uniq_id"));
+            this.properties.put("adtrace_video_id", properties.getString("sdk_video_id"));
+        } else if ("adtrace_register".equals(sourceEvent)) {
+            //虚拟子渠道
+            this.properties.put("adtrace_virtual_sub_channel", properties.getString("proj_virtual_sub_channel"));
+        }
+    }
+
 }
